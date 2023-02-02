@@ -83,6 +83,13 @@ class HTTPClient:
         self.connector: aiohttp.BaseConnector | None = options.get("connector")
         self.personal_inventory_lock = asyncio.Lock()
 
+
+    @property
+    def session(self) -> aiohttp.ClientSession:
+        return self._session
+
+
+
     def clear(self) -> None:
         self._session = aiohttp.ClientSession(
             cookies={"Steam_Language": self.language.api_name},
