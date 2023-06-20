@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "steamio"
-version = "0.9.7"
+version = "0.9.9"
 description = "A Python wrapper for the Steam API"
 authors = ["Gobot1234"]
 license = "MIT"
@@ -134,5 +134,5 @@ testpaths = ["tests"]
 asyncio_mode = "strict"
 
 [build-system]
-requires = ["poetry-core==1.1.0b2", "tomli; python_version < '3.11'"]
+requires = ["poetry-core>=1.2", "tomli; python_version < '3.11'"]
 build-backend = "poetry.core.masonry.api"

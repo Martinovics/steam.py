@@ -936,12 +936,14 @@ class ConnectionState(Registerable):
             self.dispatch("typing", author, when)
 
     async def handle_user_message_reaction(self, msg: MsgProto[friend_messages.MessageReactionNotification]) -> None:
-        user = await self._maybe_user(msg.body.steamid_friend)
+        participant = await self._maybe_user(msg.body.steamid_friend)
+        reactor = self.user if msg.body.reactor == self.user.id else participant
         ordinal = msg.body.ordinal
         created_at = DateTime.from_timestamp(msg.body.server_timestamp)
+        authors = {participant, self.user}
         message = utils.find(
             lambda message: (
-                message.author in (user, self.user)
+                message.author in authors
                 and message.created_at == created_at
                 and message.ordinal == ordinal
                 and message.group is None
@@ -962,7 +964,7 @@ class ConnectionState(Registerable):
                 "Got an unknown reaction_type %s on message %s %s", msg.body.reaction_type, created_at, ordinal
             )
 
-        reaction = MessageReaction(self, message, emoticon, sticker, user, created_at, ordinal)
+        reaction = MessageReaction(self, message, emoticon, sticker, reactor, created_at, ordinal)
         self.dispatch(f"reaction_{'add' if msg.body.is_add else 'remove'}", reaction)
 
     async def handle_chat_message(self, msg: MsgProto[chat.IncomingChatMessageNotification]) -> None:
@@ -1085,7 +1087,7 @@ class ConnectionState(Registerable):
         before = copy(chat_group)
         before._channels = {c_id: copy(c) for c_id, c in before._channels.items()}
         chat_group._update_channels(msg.body.chat_rooms)
-        self.dispatch(f"{chat_group.__class__.__name__}_update", before, chat_group)
+        self.dispatch(f"{chat_group.__class__.__name__.lower()}_update", before, chat_group)
 
     @register(EMsg.ServiceMethodResponse)
     async def parse_service_method_response(self, msg: MsgProto[Any]) -> None:
@@ -1182,7 +1184,6 @@ class ConnectionState(Registerable):
                         self._add_friend(user)
                 else:
                     if isinstance(invite, UserInvite):
-                        assert not isinstance(invite.invitee, SteamID)
                         self.dispatch("user_invite_accept", invite)
                         if isinstance(invite.invitee, User):
                             friend = self._add_friend(invite.invitee)
