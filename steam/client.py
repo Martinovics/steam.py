@@ -550,6 +550,8 @@ class Client:
             log.info("Trades will not be automatically accepted when sent as no identity_secret was passed.")
 
         await self._login(SteamWebSocket.from_client, refresh_token=refresh_token)
+        sess = self.http.session
+        print('asd')
 
     async def anonymous_login(self) -> None:
         """Initialize a connection to a Steam CM and login anonymously."""
