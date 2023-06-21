@@ -78,6 +78,12 @@ class HTTPClient:
         self.proxy_auth: aiohttp.BasicAuth | None = options.get("proxy_auth")
         self.connector: aiohttp.BaseConnector | None = options.get("connector")
 
+
+    @property
+    def session(self) -> aiohttp.ClientSession:
+        return self._session
+
+
     def clear(self) -> None:
         self._session = aiohttp.ClientSession(
             connector=self.connector,
